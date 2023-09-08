@@ -1,0 +1,35 @@
+﻿1. Создание таблицы в формате ORC с компрессией:
+CREATE TABLE hive_db.citation_data_orc
+(
+    oci string,
+    citing string,
+    cited string,
+    creation string,
+    timespan string,
+    journal_sc string,
+    author_sc string
+)
+STORED AS ORC
+TBLPROPERTIES("orc.compress"="ZLIB");
+
+2. Заполнение данными из большой таблицы hive_db.citation_data в таблицу hive_db.citation_data_orc:
+INSERT INTO TABLE hive_db.citation_data_orc SELECT * FROM hive_db.citation_data;
+
+3. Просмотр размера данных:
+hdfs dfs -du -h -s /user/hive/warehouse/hive_db.db/citation_data_orc
+
+4. Подсчет количества строк в разных форматах хранения:
+SELECT COUNT(*) FROM hive_db.citation_data_orc;
+
+5. Подсчет агрегатов по одной и нескольким колонкам в разных форматах:
+
+-- Агрегат по одной колонке
+
+SELECT journal_sc, COUNT(*) FROM hive_db.citation_data_orc GROUP BY journal_sc;
+
+-- Агрегат по нескольким колонкам
+
+SELECT journal_sc, author_sc, COUNT(*) FROM hive_db.citation_data_orc GROUP BY journal_sc, author_sc;
+
+6. Выводы о эффективности хранения и компрессии:
+Для определения эффективности хранения и компрессии необходимо сравнить размер данных и время выполнения запросов в разных форматах. Размер данных можно сравнить с помощью команды hdfs dfs -du -h -s, а время выполнения запросов можно замерить с помощью функциональности профилирования запросов в Hive.
